@@ -22,5 +22,37 @@ Threat Matrix Options: **Choose between **Easy**, **Normal**, and **Hard** optio
 
 ***Technical Architecture Breakdown***
 
-The project abandons traditional hardcoded canvas procedural updates in favor of independent object lifecycle vectors:
+Traditional canvas game loops often rely on a single, monolithic file crammed with loose arrays and procedural logic. As entities grow, this approach introduces fragile global state mutations, tight system coupling, and extreme performance degradation. 
 
+This project completely abandons procedural updates in favor of **Decoupled Object Lifecycle Vectors** managed through a strict state machine routing engine (`sketch.js`). 
+
+### 🧬 Component Architecture & State Isolation
+Each game element exists as an independent entity capsule (`classes/`) responsible for its own state computations, rendering parameters, and bounding-box collision detection:
+
+* **State vs. Render Separation:** The central loop orchestrates *when* steps happen, but *how* they happen is delegated directly to the active object instance.
+* **Dynamic Matrix Slicing:** Instead of holding redundant copies of images in memory, a centralized spritesheet parser crops a 45-frame asset grid (5 columns, 9 rows) into a localized texture buffer. Individual object instances simply reference a moving index pointer to animate fluidly.
+
+```javascript
+// From classes/Projectile.js - Isolated Lifecycle Execution
+update() {
+  this.x += this.speedX;
+  this.y += this.speedY;
+  
+  // Linear 2D matrix calculation mapped into a 1D index loop
+  if (this.isEnemy && frameCount % this.animationSpeed === 0 && projectileFrames.length > 0) {
+    this.currentFrame = (this.currentFrame + 1) % projectileFrames.length;
+  }
+}
+
+//To solve the issue of asset orientation changing across different spritesheets, the architecture abstracts drawing coordinates using canvas transform matrices:
+
+display() {
+  push();            // Isolate the global drawing state context
+  translate(this.x, this.y); // Translate the canvas origin directly to the object center
+  rotate(HALF_PI);   // Standardize orientation uniformly by 90 degrees
+  imageMode(CENTER);
+  image(projectileFrames[this.currentFrame], 0, 0, this.w, this.h);
+  pop();             // Restore original canvas configuration safely
+}
+
+By resetting canvas transformations using push() and pop(), individual object transformations are entirely self-contained. This prevents visual artifacts or unintended layout shifts elsewhere in the game.
