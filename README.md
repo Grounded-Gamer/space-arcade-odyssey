@@ -32,6 +32,7 @@ Each game element exists as an independent entity capsule (`classes/`) responsib
 * **State vs. Render Separation:** The central loop orchestrates *when* steps happen, but *how* they happen is delegated directly to the active object instance.
 * **Dynamic Matrix Slicing:** Instead of holding redundant copies of images in memory, a centralized spritesheet parser crops a 45-frame asset grid (5 columns, 9 rows) into a localized texture buffer. Individual object instances simply reference a moving index pointer to animate fluidly.
 
+<<<<<<< HEAD
 ```javascript
 // From classes/Projectile.js - Isolated Lifecycle Execution
 update() {
@@ -56,3 +57,4 @@ display() {
 }
 
 By resetting canvas transformations using push() and pop(), individual object transformations are entirely self-contained. This prevents visual artifacts or unintended layout shifts elsewhere in the game.
+=======
